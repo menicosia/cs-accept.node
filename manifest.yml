@@ -1,5 +1,5 @@
 ---
 applications:
-- name: mysql-monitor
-  command: node mysql-monitor.js
+- name: cs-accept
+  memory: 128M
 
