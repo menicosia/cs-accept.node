@@ -41,6 +41,10 @@ if (process.env.VCAP_SERVICES) {
         riakcs_credentials = vcap_services["riakcs"][0]["credentials"] ;
         console.log("Got access credentials to riakcs: " + JSON.stringify(riakcs_credentials)) ;
     }
+} else if (process.env.LOCAL_MODE) {
+    pm_uri = "http://root:password@127.0.0.1/testing" ;
+    console.log("Local mode set to true, configuring myself to use local MySQL.") ;
+    activateState="mysql" ;
 }
 
 if (process.env.VCAP_APP_PORT) { var port = process.env.VCAP_APP_PORT ;}
@@ -293,7 +297,7 @@ function requestHandler(request, response) {
         }
         return(true) ;
         break ;
-    case "":
+    case "read":
         if ("mysql" == activateState) {
             readTable(request, response, "SampleData", handleValuesRequest) ;
         } else if ("riakcs" == activateState) {
@@ -301,6 +305,8 @@ function requestHandler(request, response) {
         } else {
             response.end("Error: Not set up to use either MySQL or RiakCS as a backing store.") ;
         }
+        return(true) ;
+        break ;
     }
 }
 

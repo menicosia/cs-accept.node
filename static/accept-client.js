@@ -2,6 +2,7 @@
 
 window.onload = function () {
     getDBstatus() ;
+    updateReadURL() ;
 }
 
 function getDBstatus() {
@@ -22,6 +23,15 @@ function getDBstatus() {
 }
 
 function displayDBstatus(text) {
-    var p = document.getElementById("dbstatus") ;
-    p.innerHTML = text ;
+    var span = document.getElementById("dbstatus") ;
+    span.innerHTML = text ;
+}
+
+function updateReadURL() {
+    var span = document.getElementById("readURL") ;
+    var newA = document.createElement("A") ;
+    newA.appendChild(document.createTextNode("read")) ;
+    newA.text = "/read" ;
+    newA.href = document.baseURI = "read" ;
+    span.appendChild(newA) ;
 }
