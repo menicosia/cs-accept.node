@@ -1,12 +1,12 @@
 // Accept Client - code to access the cs-accept server
-// var JSON = require('JSON') ;
 
 window.onload = function () {
     getDBstatus() ;
 }
 
 function getDBstatus() {
-    var url = "http://127.0.0.1:8080/json/dbstatus" ;
+    var url = document.baseURI + "json/dbstatus" ;
+    console.log("URL: " + url) ;
     var request = new XMLHttpRequest() ;
     request.onload = function () {
         if (200 == request.status) {
@@ -22,7 +22,6 @@ function getDBstatus() {
 }
 
 function displayDBstatus(text) {
-    
     var p = document.getElementById("dbstatus") ;
     p.innerHTML = text ;
 }

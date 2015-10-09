@@ -15,9 +15,6 @@ var url = require('url') ;
 var util = require('util') ;
 var mysql = require('mysql') ;
 
-// CONFIGURE THESE
-var numSecondsStore = 600 // Default 10 minutes
-
 // Variables
 var data = "" ;
 var activateState = Boolean(false) ;
@@ -51,7 +48,6 @@ else { var port = 8080 ; }
 if (process.env.CF_INSTANCE_INDEX) { var myIndex = JSON.parse(process.env.CF_INSTANCE_INDEX) ; }
 else { myIndex = 0 ; }
 var myInstance = "Instance_" + myIndex + "_Hash" ;
-var myInstanceBits = "Instance_" + myIndex + "_Bits" ;
 
 function setupSchema() {
     dbClient.query("show tables LIKE 'SampleData'", function(err, results, fields) {
@@ -64,7 +60,7 @@ function setupSchema() {
                 dbClient.query("create table SampleData (K VARCHAR(20), V VARCHAR(20))",
                                function (err, results, fields) {})
             } else {
-                console.log("Table exists.") ;
+                console.log("SampleData table already exists.") ;
             }
         }
     }) ;
@@ -218,7 +214,7 @@ function readTable(request, response, table, callBack) {
                            callBack(request, response, error, results, fields) ;
                        }) ;
     } else {
-        errorDbNotRead(request, response) ;
+        errorDbNotReady(request, response) ;
     }
 }
 
