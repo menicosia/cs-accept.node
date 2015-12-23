@@ -18,9 +18,8 @@ var mysql = require('mysql') ;
 // Variables
 var data = "" ;
 var activateState = Boolean(false) ;
-var pm_uri = "" ;
+var pm_uri = undefined ;
 var vcap_services = undefined ;
-var pm_credentials = undefined ;
 var dbClient = undefined ;
 var dbConnectState = Boolean(false) ;
 var dbConnectTimer = undefined ;
@@ -32,8 +31,7 @@ var riakcsConnectionState = Boolean(false) ;
 if (process.env.VCAP_SERVICES) {
     vcap_services = JSON.parse(process.env.VCAP_SERVICES) ;
     if (vcap_services['p-mysql']) {
-        pm_credentials = vcap_services["p-mysql"][0]["credentials"] ;
-        pm_uri = pm_credentials["uri"] ;
+        pm_uri = vcap_services["p-mysql"][0]["credentials"]["uri"] ;
         console.log("Got access credentials to database: " + pm_uri) ;
         activateState="mysql" ;
     }
