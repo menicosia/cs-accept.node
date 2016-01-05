@@ -4,7 +4,6 @@ var dbStatus = undefined ;
 
 window.onload = function () {
     getDBstatus() ;
-    getCurrentData() ;
 }
 
 function getDBstatus() {
@@ -14,20 +13,18 @@ function getDBstatus() {
     request.onload = function () {
         if (200 == request.status) {
             q = JSON.parse(request.responseText) ;
-            // FIXME: this dbStatus is not the global variable
             dbStatus = q.dbStatus ;
-            displayDBstatus(q.dbStatus) ;
-        } else {
-            displayDBstatus("Request Failed.") ;
+            displayDBstatus() ;
+            getCurrentData() ;
         }
     } ;
     request.open("GET", url) ;
     request.send(null) ;
 }
 
-function displayDBstatus(text) {
+function displayDBstatus() {
     var span = document.getElementById("dbstatus") ;
-    span.innerHTML = text ;
+    span.innerHTML = dbStatus ;
 }
 
 function getCurrentData() {
@@ -44,6 +41,8 @@ function getCurrentData() {
         }
         request.open("GET", url) ;
         request.send(null) ;
+    } else {
+        console.log("dbStatus not true, not loading data: " + dbStatus) ;
     }
 }
 

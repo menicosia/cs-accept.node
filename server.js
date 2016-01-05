@@ -122,6 +122,7 @@ function handleRiakcsConnect(message, err) {
         break ;
     }
 }
+
         
 
 // Helper functions
@@ -153,45 +154,11 @@ function sql2json(request, response, error, results, fields) {
     }
 }
 
-function valuesPage(request, response, tableHTML) {
-    pageHTML = "<h1>Core Services Acceptance</h1>\n" ;
-	  pageHTML += "<p>" + strftime("%Y-%m-%d %H:%M") + "<br>\n" ;
-    pageHTML += "<center>" + tableHTML + "</center><br>" ;
-	  pageHTML += "Database connection info: " + pm_uri + "<br>\n" ;
-    pageHTML += "</p>\n<hr>\n" ;
-    pageHTML += "<A HREF=\"" + url.resolve(request.url, "/env") + "\">/env</A>  " ;
-    pageHTML += "<A HREF=\"" + url.resolve(request.url, "/ping") + "\">/ping</A>\n" ;
-
-    response.end(pageHTML) ;
-}
-
-function handleValuesRequest(request, response, error, results, fields) {
-    if (error) {
-        dbError(response, error) ;
-    } else {
-        tableHTML = "<table border=1><tr><th>Key</th><th>Value</th></tr>\n" ;
-        for (var kv in results) {
-            result = results[kv] ;
-            tableHTML += "<tr><td>" + result['K'] + "</td><td>"
-                + result['V'] + "</td></tr>\n" ;
-        }
-        tableHTML += "</table>\n" ;
-
-        // At last we can return a values Page
-        valuesPage(request, response, tableHTML) ;
-    }
-}
-
 function handleWriteRequest(request, response, error, results, fields) {
     if (error) { dbError(response, error) }
     else {
-        pageHTML = "<h1>Write successful.</h1>\n" ;
-        pageHTML += "<hr>\n" ;
-        pageHTML += "<A HREF=\"" + url.resolve(request.url, "/") + "\">HOME</A>  " ;
-        pageHTML += "<A HREF=\"" + url.resolve(request.url, "/env") + "\">/env</A>  " ;
-        pageHTML += "<A HREF=\"" + url.resolve(request.url, "/ping") + "\">/ping</A>\n"
-        ;
-        response.end(pageHTML) ;
+        response.writeHead(302, {'Location': '/'}) ;
+        response.end()
     }
     return(true) ;
 }
@@ -247,7 +214,11 @@ function dispatchApi(request, response, method, query) {
                          + " (request: " + request.url + ")") ;
         }
         break ;
+    default:
+        response.writeHead(404) ;
+        response.end(false) ;
     }
+    
 }
 
 function requestHandler(request, response) {
@@ -295,16 +266,9 @@ function requestHandler(request, response) {
         }
         return(true) ;
         break ;
-    case "read":
-        if ("mysql" == activateState) {
-            readTable(request, response, "SampleData", handleValuesRequest) ;
-        } else if ("riakcs" == activateState) {
-            response.end("When using RiakCS, use the /json/read end-point to view data.") ;
-        } else {
-            response.end("Error: Not set up to use either MySQL or RiakCS as a backing store.") ;
-        }
-        return(true) ;
-        break ;
+    default:
+        response.writeHead(404) ;
+        response.end("404 - not found") ;
     }
 }
 
