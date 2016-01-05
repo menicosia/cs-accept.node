@@ -32,16 +32,16 @@ if (process.env.VCAP_SERVICES) {
     vcap_services = JSON.parse(process.env.VCAP_SERVICES) ;
     if (vcap_services['p-mysql']) {
         pm_uri = vcap_services["p-mysql"][0]["credentials"]["uri"] ;
-        console.log("Got access credentials to database: " + pm_uri) ;
+        util.log("Got access credentials to database: " + pm_uri) ;
         activateState="mysql" ;
     }
     if (vcap_services['riakcs']) {
         riakcs_credentials = vcap_services["riakcs"][0]["credentials"] ;
-        console.log("Got access credentials to riakcs: " + JSON.stringify(riakcs_credentials)) ;
+        util.log("Got access credentials to riakcs: " + JSON.stringify(riakcs_credentials)) ;
     }
 } else if (process.env.LOCAL_MODE) {
-    pm_uri = "http://root:password@127.0.0.1/testing" ;
-    console.log("Local mode set to true, configuring myself to use local MySQL.") ;
+    pm_uri = "http://root:password@127.0.0.1/csaccept" ;
+    util.log("Local mode set to true, configuring myself to use local MySQL.") ;
     activateState="mysql" ;
 }
 
@@ -58,11 +58,11 @@ function setupSchema() {
             process.exit(1) ;
         } else {
             if (0 == results.length) {
-                console.log("Setting up schema.") ;
+                util.log("Setting up schema.") ;
                 dbClient.query("create table SampleData (K VARCHAR(20), V VARCHAR(20))",
                                function (err, results, fields) {})
             } else {
-                console.log("SampleData table already exists.") ;
+                util.log("SampleData table already exists.") ;
             }
         }
     }) ;
@@ -84,7 +84,7 @@ function handleDBConnect(err) {
                       ", will try again every 1 second.") ;
         dbConnectTimer = setTimeout(MySQLConnect, 1000) ;
     } else {
-        console.log("Connected to database.") ;
+        util.log("Connected to database.") ;
         dbClient.on('error', handleDBerror) ;
         dbConnectState = true ;
         if (dbConnectTimer) {
@@ -97,7 +97,7 @@ function handleDBConnect(err) {
 
 function handleDBping(request, response, err) {
     if (err) {
-        console.log("MySQL Connection error: " + err) ;
+        util.log("MySQL Connection error: " + err) ;
         response.end("MySQL connection error: " + err) ;
         dbClient.destroy() ;
         MySQLConnect() ;
@@ -107,18 +107,18 @@ function handleDBping(request, response, err) {
 }
 
 function handleRiakcsConnect(message, err) {
-    console.log("handleRiakcsConnect called with message: " + message) ;
+    util.log("handleRiakcsConnect called with message: " + message) ;
     switch (message) {
     case "error":
         riakcsConnectionState = false ;
-        console.log("Riakcs connection failed: " + err + "\nWill try again in 3s." ) ;
+        util.log("Riakcs connection failed: " + err + "\nWill try again in 3s." ) ;
         setTimeout(RiakcsConnect, 3000) ;
         break ;
     case "ready":
         riakcsConnectionState = true ;
         riakcsClient.hget(myInstance, "lastKeyUpdated", handleLastKey) ;
         riakcsClient.hget(myInstance, "lastUpdate", handleLastTime) ;
-        console.log("Riakcs READY.") ;
+        util.log("Riakcs READY.") ;
         break ;
     }
 }
@@ -240,7 +240,7 @@ function dispatchApi(request, response, method, query) {
         break ;
     case "read":
         if (query["table"]) {
-            console.log("Received request to read table: " + query["table"]) ;
+            util.log("Received request to read table: " + query["table"]) ;
             readTable(request, response, query["table"], sql2json) ;
         } else {
             response.end("ERROR: Usage: /json/read?table=name"
@@ -254,7 +254,7 @@ function requestHandler(request, response) {
     var data = "" ;
     requestParts = url.parse(request.url, true) ;
     rootCall = requestParts["pathname"].split('/')[1] ;
-    console.log("Recieved request for: " + rootCall) ;
+    util.log("Recieved request for: " + rootCall) ;
     switch (rootCall) {
     case "env":
 	      if (process.env) {
@@ -287,7 +287,7 @@ function requestHandler(request, response) {
         break ;
     case "write":
         if (requestParts["query"]["key"]) {
-            console.log("Received request to write key: " + requestParts["query"]["key"]) ;
+            util.log("Received request to write key: " + requestParts["query"]["key"]) ;
             writeSomething(request, response, requestParts["query"]["key"]) ;
         } else {
             response.end("ERROR: Usage: /write?key=foo"
@@ -309,13 +309,6 @@ function requestHandler(request, response) {
 }
 
 // MAIN
-var staticServer = serveStatic("static") ;
-monitorServer = http.createServer(function(req, res) {
-    if (! requestHandler(req, res)) {
-        var done = finalhandler(req, res) ;
-        staticServer(req, res, done)
-    }
-}) ;
 
 if ("mysql" == activateState) {
     MySQLConnect() ;
@@ -323,6 +316,12 @@ if ("mysql" == activateState) {
     console.error("Error: Not set up to use either MySQL or RiakCS as a backing store.") ;
 }
     
+var staticServer = serveStatic("static") ;
+monitorServer = http.createServer(function(req, res) {
+    var done = finalhandler(req, res) ;
+    staticServer(req, res, function() {requestHandler(req, res, done)}) ;
+}) ;
+
 monitorServer.listen(port) ;
 
-console.log("Server up and listening on port: " + port) ;
+util.log("Server up and listening on port: " + port) ;
