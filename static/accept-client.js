@@ -14,6 +14,7 @@ function getDBstatus() {
     request.onload = function () {
         if (200 == request.status) {
             q = JSON.parse(request.responseText) ;
+            // FIXME: this dbStatus is not the global variable
             dbStatus = q.dbStatus ;
             displayDBstatus(q.dbStatus) ;
         } else {
