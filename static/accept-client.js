@@ -49,7 +49,7 @@ function getCurrentData() {
 function displayDBdata(data) {
     console.log("called on data: " + data) ;
     var item ;
-    var dataTable = document.getElementById("dataTable") ;
+    var dataTable = document.getElementById("dataBody") ;
     for (i = 0 ; i < data.length ; i++) {
         var newTR = document.createElement("TR") ;
         var keyTD = document.createElement("TD") ;
@@ -57,7 +57,7 @@ function displayDBdata(data) {
         keyTD.appendChild(document.createTextNode(data[i][0])) ;
         valTD.appendChild(document.createTextNode(data[i][1])) ;
         newTR.appendChild(keyTD) ; newTR.appendChild(valTD) ;
-        dataTable.appendChild(newTR) ;
+        dataTable.insertBefore(newTR, dataTable.firstChild) ;
     }
     // IDEA: Add a form here with action write?key=...
 }
