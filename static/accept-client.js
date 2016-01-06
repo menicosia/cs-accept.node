@@ -59,5 +59,4 @@ function displayDBdata(data) {
         newTR.appendChild(keyTD) ; newTR.appendChild(valTD) ;
         dataTable.insertBefore(newTR, dataTable.firstChild) ;
     }
-    // IDEA: Add a form here with action write?key=...
 }
