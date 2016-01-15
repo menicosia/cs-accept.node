@@ -168,11 +168,10 @@ function dbError(response, error) {
     response.end("ERROR getting values: " + error) ;
 }
     
-function errorDbNotReady(request, response) {
-    console.error("ERROR: Database is Not Ready") ;
+function errorDbNotReady(response) {
     errHTML = "<title>Error</title><H1>Error</H1>\n"
     errHTML += "<p>Database info is not set or DB is not ready<br>\n" ;
-    errHTML += "<hr><A HREF=\"" + url.resolve(request.url, "/dbstatus") + "\">/dbstatus</A>\n" ;
+    errHTML += "<hr><A HREF=\"/dbstatus\">/dbstatus</A>\n" ;
     response.end(errHTML) ;
 }
 
@@ -196,7 +195,7 @@ function writeSomething(request, response, key) {
             handleWriteRequest(request, response, error, results, fields) ;
         }) ;
     } else {
-        errorDbNotReady(response, error) ;
+        errorDbNotReady(response) ;
     }
 }
 
