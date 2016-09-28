@@ -9,7 +9,7 @@ This app is very simple, it's basically one web page.
 ```
 cf push --no-start
 cf create-service p-mysql 100mb acceptDB #(or whatever instance name you prefer)
-cf bind-service cs-accept acceptDB`
+cf bind-service cs-accept acceptDB
 cf restart cs-accept
 ```
 ## Usage
