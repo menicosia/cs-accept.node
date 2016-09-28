@@ -6,11 +6,12 @@ This app is very simple, it's basically one web page.
 
 ## Install
 
-- `cf push --no-start`
-- `cf create-service p-mysql 100mb acceptDB` (or whatever instance name you prefer)
-- `cf bind-service cs-accept acceptDB`
-- `cf restart cs-accept`
-
+```
+cf push --no-start
+cf create-service p-mysql 100mb acceptDB #(or whatever instance name you prefer)
+cf bind-service cs-accept acceptDB`
+cf restart cs-accept
+```
 ## Usage
 
 Just visit the home page. For an un-initialized DB, you'll see a single entry field. As you enter keys, they'll be recorded using a timestmp as the value. From then on, every home page load will load the data set from the DB, showing that the data has been recorded in the database.
