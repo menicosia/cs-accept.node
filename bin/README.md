@@ -15,6 +15,7 @@ I thought I'd be clever, deploy this all onto a c4.2xlarge and write all the dat
 
 Create or clear out the accept database:
 > mysql -u root -p -e "drop database accept ; create database accept ; grant all privileges on accept.* to 'root'@'localhost'";
+
   - I think that last is required to enable `LOAD DATA INFILE` although I haven't gotten `LOAD DATA LOCAL INFILE` to work without changing the `my.cnf`.
 
 I ran this in parallel using this syntax:
