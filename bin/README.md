@@ -4,7 +4,7 @@
 
 ### Re-deploy with one big node
 
-You'll want to change the deployment manifest to deploy a single big node, and get rid of the cluster, as replication will slow things down. You can expand back up to 3 or 2+1 nodes afterwards, and SST should be much more efficient.
+You'll want to change the deployment manifest to deploy a single big node, and get rid of the cluster, as replication will slow things down. Save off the original deploy manifest; then you can expand back up to 3 or 2+1 nodes afterwards, and SST should be much more efficient.
 
 Here's the diff you should expect when changing the deployment manifest:
 
@@ -35,6 +35,13 @@ Here's the diff you should expect when changing the deployment manifest:
     - name: mysql3
     static_ips:
     -     - 10.0.23.11
+    properties:
+      cf_mysql:
+        mysql:
+          cluster_ips:
+-         - 10.0.22.10
+-         -
+-         - 10.0.23.11
 ```
 
 ### Running the script
