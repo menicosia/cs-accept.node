@@ -2,6 +2,43 @@
 
 ## load-data.pl
 
+### Re-deploy with one big node
+
+You'll want to change the deployment manifest to deploy a single big node, and get rid of the cluster, as replication will slow things down. You can expand back up to 3 or 2+1 nodes afterwards, and SST should be much more efficient.
+
+Here's the diff you should expect when changing the deployment manifest:
+
+```
+    → goprimo -d cf-mysql deploy /tmp/primo-mysql.yml
+    Using environment 'bosh.primo.cf-app.com' as user 'admin'
+    
+    Using deployment 'cf-mysql'
+    
+    resource_pools:
+    - name: mysql_z1
+    cloud_properties:
+    -     instance_type: m3.large
+    +     instance_type: c4.2xlarge
+    
+    jobs:
+    - name: mysql_z2
+    -   instances: 1
+    +   instances: 0
+    networks:
+    - name: mysql2
+    static_ips:
+    -     - 10.0.22.10
+    - name: arbitrator_z3
+    -   instances: 1
+    +   instances: 0
+    networks:
+    - name: mysql3
+    static_ips:
+    -     - 10.0.23.11
+```
+
+### Running the script
+
 I thought I'd be clever, deploy this all onto a c4.2xlarge and write all the data loading in a single perl script, so as to avoid lots of forking of the mysql client. That was harder than I'd like, here are some notes:
 
 1. Installing `DBD::mysql` is a pain on a bosh stemcell. Among others, you need to specify where to find the mysqld_config:
