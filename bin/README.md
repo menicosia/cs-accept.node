@@ -1,3 +1,7 @@
+# Utility scripts for core-services acceptance
+
+## load-data.pl
+
 I thought I'd be clever, deploy this all onto a c4.2xlarge and write all the data loading in a single perl script, so as to avoid lots of forking of the mysql client. That was harder than I'd like, here are some notes:
 
 1. Installing `DBD::mysql` is a pain on a bosh stemcell. Among others, you need to specify where to find the mysqld_config:
