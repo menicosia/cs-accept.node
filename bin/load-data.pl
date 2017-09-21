@@ -8,6 +8,10 @@
 #  Always assumes a pre-existing database called "accept", writable by the creds provided
 #  Always assumes a pre-existing directory "/var/vcap/store/tmp" ## FIXME: Configurable TMPDIR?
 #  Needs DB_USER and DB_PASSWORD environment variables
+#
+# NOTE: If you just need a lot of data, that's OK with repeated random data, just
+#       seed your data with this script, then run this a few times:
+#       insert into randomdataX select NULL,text from randomdataX LIMIT 1000000;
 
 $| = 1 ;
 use DBI ;
