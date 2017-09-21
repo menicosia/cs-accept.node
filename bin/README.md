@@ -48,6 +48,13 @@ Here's the diff you should expect when changing the deployment manifest:
 
 I thought I'd be clever, deploy this all onto a c4.2xlarge and write all the data loading in a single perl script, so as to avoid lots of forking of the mysql client. That was harder than I'd like, here are some notes:
 
+[UPDATE] It's worse than it was before. However, these steps work if you can access the Internet:
+
+- apt install libdbi-perl
+- apt install libdbd-mysql-perl
+
+Old instructions below:
+
 1. Installing `DBD::mysql` is a pain on a bosh stemcell. Among others, you need to specify where to find the mysqld_config:
   - Become root.
     - ```cpan -fi DBI::DBD```
