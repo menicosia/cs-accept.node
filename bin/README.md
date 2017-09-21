@@ -50,7 +50,7 @@ I thought I'd be clever, deploy this all onto a c4.2xlarge and write all the dat
 
 1. Installing `DBD::mysql` is a pain on a bosh stemcell. Among others, you need to specify where to find the mysqld_config:
   - Become root.
-    - ```cpan -fi DBD::DBI```
+    - ```cpan -fi DBI::DBD```
     - Attempt to install DBD::mysql which will fail:```cpan -fi DBD::mysql```
     - Look for the DBD::mysql directory: ```find Makefile.PL```
     - ```perl Makefile.PL --testsocket=/var/vcap/data/sys/run/mysql/mysqld.sock --testuser=root --testpassword=[REDACTED] --mysql_config=/var/vcap/data/packages/mariadb/659e865fbbfd497444cb2114adbe41890f62e1a9.1-c37afa67a1f526176097dce0315b78ffddeb7aed/bin/mysql_config```
