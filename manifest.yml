@@ -3,4 +3,6 @@ applications:
 - name: cs-accept
   buildpack: nodejs_buildpack
   memory: 128M
+  services:
+  - acceptDB
 
