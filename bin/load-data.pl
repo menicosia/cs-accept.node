@@ -12,6 +12,9 @@
 $| = 1 ;
 use DBI ;
 
+$dbUser = $ENV{'DB_USER'} ;
+$dbPassword = $ENV{'DB_PASSWORD'} ;
+
 sub writeRandomData {
     my ($filename, $numRecords) = @_ ;
     my ($i, $j, $q) ;
