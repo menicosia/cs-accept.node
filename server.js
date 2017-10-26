@@ -14,6 +14,7 @@ var time = require('time') ;
 var url = require('url') ;
 var util = require('util') ;
 var mysql = require('mysql') ;
+var fs = require('fs') ;
 
 // Variables
 var data = "" ;
@@ -153,7 +154,10 @@ function MySQLConnect() {
             user : mysql_creds["user"],
             password : mysql_creds["password"],
             port : mysql_creds["port"],
-            database : mysql_creds["database"]
+            database : mysql_creds["database"],
+            ssl : {
+                ca : fs.readFileSync('/etc/ssl/certs/ca-certificates.crt')
+            },
         } ) ;
         dbClient.connect(handleDBConnect) ;
     } else {
