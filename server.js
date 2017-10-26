@@ -18,7 +18,7 @@ var mysql = require('mysql') ;
 // Variables
 var data = "" ;
 var activateState = Boolean(false) ;
-var pm_uri = undefined ;
+var mysql_creds = {} ;
 var vcap_services = undefined ;
 var dbClient = undefined ;
 var dbConnectState = Boolean(false) ;
@@ -31,8 +31,15 @@ var riakcsConnectionState = Boolean(false) ;
 if (process.env.VCAP_SERVICES) {
     vcap_services = JSON.parse(process.env.VCAP_SERVICES) ;
     if (vcap_services['p-mysql']) {
+        mysql_creds["host"] = vcap_services["p-mysql"][0]["credentials"]["hostname"] ;
+        mysql_creds["user"] = vcap_services["p-mysql"][0]["credentials"]["username"] ;
+        mysql_creds["password"] = vcap_services["p-mysql"][0]["credentials"]["password"] ;
+        mysql_creds["port"] = vcap_services["p-mysql"][0]["credentials"]["port"] ;
+        mysql_creds["user"] = vcap_services["p-mysql"][0]["credentials"]["username"] ;
+        mysql_creds["database"] = vcap_services["p-mysql"][0]["credentials"]["name"] ;
+        mysql_creds["ca_certificate"] = vcap_services["p-mysql"][0]["credentials"]["ca_certificate"] ;
         pm_uri = vcap_services["p-mysql"][0]["credentials"]["uri"] ;
-        util.log("Got access credentials to database: " + pm_uri) ;
+        util.log("Got access credentials to database") ;
         activateState="mysql" ;
     }
     if (vcap_services['riakcs']) {
@@ -40,7 +47,7 @@ if (process.env.VCAP_SERVICES) {
         util.log("Got access credentials to riakcs: " + JSON.stringify(riakcs_credentials)) ;
     }
 } else if (process.env.LOCAL_MODE) {
-    pm_uri = "http://root:password@127.0.0.1/csaccept" ;
+    // pm_uri = "http://root:password@127.0.0.1/csaccept" ;
     util.log("Local mode set to true, configuring myself to use local MySQL.") ;
     activateState="mysql" ;
 }
@@ -133,9 +140,21 @@ function doPing(request, response) {
     }) ;
 }
 
+function doStatus(request, response) {
+    dbClient.query("SHOW STATUS LIKE 'Ssl_version'", function (err, results, fields) {
+        response.end(JSON.stringify(results[0]["Value"])) ;
+    }) ;
+}
+
 function MySQLConnect() {
     if (activateState) {
-        dbClient = mysql.createConnection(pm_uri)
+        dbClient = mysql.createConnection( {
+            host : mysql_creds["host"],
+            user : mysql_creds["user"],
+            password : mysql_creds["password"],
+            port : mysql_creds["port"],
+            database : mysql_creds["database"]
+        } ) ;
         dbClient.connect(handleDBConnect) ;
     } else {
         dbClient = undefined ;
@@ -244,8 +263,12 @@ function requestHandler(request, response) {
         return(true) ;
         break ;
     case "dbstatus":
-        data += dbConnectState ;
-        response.end(data) ;
+        if (dbConnectState) {
+            doStatus(request, response) ;
+        } else {
+            data += "I'm sorry, Dave, I can't do that. No connection to database." ;
+            response.end(data) ;
+        }
         break ;
     case "ping":
         if (dbConnectState) {
