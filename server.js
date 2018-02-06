@@ -19,6 +19,7 @@ var fs = require('fs') ;
 // Variables
 var data = "" ;
 var activateState = Boolean(false) ;
+mysql_data_service = undefined ;
 var mysql_creds = {} ;
 var vcap_services = undefined ;
 var dbClient = undefined ;
@@ -31,16 +32,26 @@ var riakcsConnectionState = Boolean(false) ;
 // Setup based on Environment Variables
 if (process.env.VCAP_SERVICES) {
     vcap_services = JSON.parse(process.env.VCAP_SERVICES) ;
-    if (vcap_services['p-mysql']) {
-        mysql_creds["host"] = vcap_services["p-mysql"][0]["credentials"]["hostname"] ;
-        mysql_creds["user"] = vcap_services["p-mysql"][0]["credentials"]["username"] ;
-        mysql_creds["password"] = vcap_services["p-mysql"][0]["credentials"]["password"] ;
-        mysql_creds["port"] = vcap_services["p-mysql"][0]["credentials"]["port"] ;
-        mysql_creds["user"] = vcap_services["p-mysql"][0]["credentials"]["username"] ;
-        mysql_creds["database"] = vcap_services["p-mysql"][0]["credentials"]["name"] ;
-        mysql_creds["ca_certificate"] = vcap_services["p-mysql"][0]["credentials"]["ca_certificate"] ;
-        pm_uri = vcap_services["p-mysql"][0]["credentials"]["uri"] ;
-        util.log("Got access credentials to database") ;
+    if (vcap_services['p.mysql']) {
+        mysql_data_service = "p.mysql" ;
+    }
+    if (vcap_services["p-mysql"]) {
+        mysql_data_service = "p-mysql" ;
+    }
+    if (mysql_data_service) {
+        mysql_creds["host"] = vcap_services[mysql_data_service][0]["credentials"]["hostname"] ;
+        mysql_creds["user"] = vcap_services[mysql_data_service][0]["credentials"]["username"] ;
+        mysql_creds["password"] = vcap_services[mysql_data_service][0]["credentials"]["password"] ;
+        mysql_creds["port"] = vcap_services[mysql_data_service][0]["credentials"]["port"] ;
+        mysql_creds["user"] = vcap_services[mysql_data_service][0]["credentials"]["username"] ;
+        mysql_creds["database"] = vcap_services[mysql_data_service][0]["credentials"]["name"] ;
+        if (vcap_services[mysql_data_service][0]["credentials"]["ca_certificate"]) {
+            mysql_creds["ca_certificate"] = vcap_services[mysql_data_service][0]["credentials"]["ca_certificate"] ;
+        } else {
+            mysql_creds["ca_certificate"] = undefined ;
+        }
+        pm_uri = vcap_services[mysql_data_service][0]["credentials"]["uri"] ;
+        util.log("Got access credentials to " + mysql_data_service + " database") ;
         activateState="mysql" ;
     }
     if (vcap_services['riakcs']) {
@@ -143,22 +154,24 @@ function doPing(request, response) {
 
 function doStatus(request, response) {
     dbClient.query("SHOW STATUS LIKE 'Ssl_version'", function (err, results, fields) {
-        response.end(JSON.stringify(results[0]["Value"])) ;
+        response.end(JSON.stringify({"dbStatus": dbConnectState,
+                                     "tls-cipher": results[0]["Value"]})) ;
     }) ;
 }
 
 function MySQLConnect() {
     if (activateState) {
-        dbClient = mysql.createConnection( {
+        clientConfig = {
             host : mysql_creds["host"],
             user : mysql_creds["user"],
             password : mysql_creds["password"],
             port : mysql_creds["port"],
-            database : mysql_creds["database"],
-            ssl : {
-                ca : fs.readFileSync('/etc/ssl/certs/ca-certificates.crt')
-            },
-        } ) ;
+            database : mysql_creds["database"]
+        } ;
+        if (mysql_creds["ca_certificate"]) {
+            clientConfig["ssl"] = { ca : mysql_creds["ca_certificate"] } ;
+        }
+        dbClient = mysql.createConnection( clientConfig ) ;
         dbClient.connect(handleDBConnect) ;
     } else {
         dbClient = undefined ;
@@ -225,7 +238,12 @@ function writeSomething(request, response, key) {
 function dispatchApi(request, response, method, query) {
     switch (method) {
     case "dbstatus":
-        response.end(JSON.stringify({"dbStatus":dbConnectState})) ;
+        if (dbConnectState) {
+            doStatus(request, response) ;
+        } else {
+            data += "I'm sorry, Dave, I can't do that. No connection to database." ;
+            response.end(data) ;
+        }
         break ;
     case "read":
         if (query["table"]) {
