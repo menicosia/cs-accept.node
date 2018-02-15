@@ -45,8 +45,8 @@ if (process.env.VCAP_SERVICES) {
         mysql_creds["port"] = vcap_services[mysql_data_service][0]["credentials"]["port"] ;
         mysql_creds["user"] = vcap_services[mysql_data_service][0]["credentials"]["username"] ;
         mysql_creds["database"] = vcap_services[mysql_data_service][0]["credentials"]["name"] ;
-        if (vcap_services[mysql_data_service][0]["credentials"]["ca_certificate"]) {
-            mysql_creds["ca_certificate"] = vcap_services[mysql_data_service][0]["credentials"]["ca_certificate"] ;
+        if (vcap_services[mysql_data_service][0]["credentials"]["tls"]) {
+            mysql_creds["ca_certificate"] = vcap_services[mysql_data_service][0]["credentials"]["tls"]["cert"]["ca"];
         } else {
             mysql_creds["ca_certificate"] = undefined ;
         }
@@ -169,6 +169,7 @@ function MySQLConnect() {
             database : mysql_creds["database"]
         } ;
         if (mysql_creds["ca_certificate"]) {
+            console.log("CA Cert detected; using TLS");
             clientConfig["ssl"] = { ca : mysql_creds["ca_certificate"] } ;
         }
         dbClient = mysql.createConnection( clientConfig ) ;
