@@ -7,8 +7,8 @@ This app is very simple, it's basically one web page.
 ## Install
 
 ```
-cf push --no-start
 cf create-service p-mysql 100mb acceptDB #(or whatever instance name you prefer)
+cf push --no-start
 cf bind-service cs-accept acceptDB
 cf restart cs-accept
 ```
