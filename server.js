@@ -15,6 +15,7 @@ var url = require('url') ;
 var util = require('util') ;
 var mysql = require('mysql') ;
 var fs = require('fs') ;
+var bindMySQL = require('./bind-mysql.js') ;
 
 // Variables
 var data = "" ;
@@ -30,39 +31,8 @@ var riakcsClient = undefined ;
 var riakcsConnectionState = Boolean(false) ;
 
 // Setup based on Environment Variables
-if (process.env.VCAP_SERVICES) {
-    vcap_services = JSON.parse(process.env.VCAP_SERVICES) ;
-    if (vcap_services['p.mysql']) {
-        mysql_data_service = "p.mysql" ;
-    }
-    if (vcap_services["p-mysql"]) {
-        mysql_data_service = "p-mysql" ;
-    }
-    if (mysql_data_service) {
-        mysql_creds["host"] = vcap_services[mysql_data_service][0]["credentials"]["hostname"] ;
-        mysql_creds["user"] = vcap_services[mysql_data_service][0]["credentials"]["username"] ;
-        mysql_creds["password"] = vcap_services[mysql_data_service][0]["credentials"]["password"] ;
-        mysql_creds["port"] = vcap_services[mysql_data_service][0]["credentials"]["port"] ;
-        mysql_creds["user"] = vcap_services[mysql_data_service][0]["credentials"]["username"] ;
-        mysql_creds["database"] = vcap_services[mysql_data_service][0]["credentials"]["name"] ;
-        if (vcap_services[mysql_data_service][0]["credentials"]["tls"]) {
-            mysql_creds["ca_certificate"] = vcap_services[mysql_data_service][0]["credentials"]["tls"]["cert"]["ca"];
-        } else {
-            mysql_creds["ca_certificate"] = undefined ;
-        }
-        pm_uri = vcap_services[mysql_data_service][0]["credentials"]["uri"] ;
-        util.log("Got access credentials to " + mysql_data_service + " database") ;
-        activateState="mysql" ;
-    }
-    if (vcap_services['riakcs']) {
-        riakcs_credentials = vcap_services["riakcs"][0]["credentials"] ;
-        util.log("Got access credentials to riakcs: " + JSON.stringify(riakcs_credentials)) ;
-    }
-} else if (process.env.LOCAL_MODE) {
-    // pm_uri = "http://root:password@127.0.0.1/csaccept" ;
-    util.log("Local mode set to true, configuring myself to use local MySQL.") ;
-    activateState="mysql" ;
-}
+mysql_creds = bindMySQL.getMySQLCreds() ;
+if (mysql_creds) { activateState="mysql" ; }
 
 if (process.env.VCAP_APP_PORT) { var port = process.env.VCAP_APP_PORT ;}
 else { var port = 8080 ; }
@@ -78,7 +48,7 @@ function setupSchema() {
         } else {
             if (0 == results.length) {
                 util.log("Setting up schema.") ;
-                dbClient.query("create table SampleData (K VARCHAR(20), V VARCHAR(20))",
+                dbClient.query("create table SampleData (K VARCHAR(20) PRIMARY KEY, V VARCHAR(20))",
                                function (err, results, fields) {})
             } else {
                 util.log("SampleData table already exists.") ;
