@@ -50,6 +50,7 @@ function displayDBdata(data) {
     console.log("called on data: " + data) ;
     var item ;
     var dataTable = document.getElementById("dataBody") ;
+    var lastRow = document.getElementById("lastRow") ;
     for (i = 0 ; i < data.length ; i++) {
         var newTR = document.createElement("TR") ;
         var keyTD = document.createElement("TD") ;
@@ -57,6 +58,6 @@ function displayDBdata(data) {
         keyTD.appendChild(document.createTextNode(data[i][0])) ;
         valTD.appendChild(document.createTextNode(data[i][1])) ;
         newTR.appendChild(keyTD) ; newTR.appendChild(valTD) ;
-        dataTable.insertBefore(newTR, dataTable.firstChild) ;
+        dataTable.insertBefore(newTR, lastRow) ;
     }
 }
