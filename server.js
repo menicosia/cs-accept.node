@@ -184,7 +184,7 @@ function errorDbNotReady(response) {
 
 function readTable(request, response, table, callBack) {
     if ("mysql" == activateState && dbConnectState) {
-        dbClient.query('SELECT K, V from ' + table,
+        dbClient.query('SELECT K, V from ' + table + ' ORDER BY V ASC',
                        function (error, results, fields) {
                            callBack(request, response, error, results, fields) ;
                        }) ;
