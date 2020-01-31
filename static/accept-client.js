@@ -4,6 +4,9 @@ var dbStatus = undefined ;
 
 window.onload = function () {
     getDBstatus() ;
+    setInterval(function () {
+        getDBstatus()
+    }, 2000) ;
 }
 
 function getDBstatus() {
@@ -24,7 +27,11 @@ function getDBstatus() {
 
 function displayDBstatus() {
     var span = document.getElementById("dbstatus") ;
-    span.innerHTML = dbStatus ;
+    if (dbStatus) {
+        span.innerHTML = "<img src='icons/greenball.gif'>" ;
+    } else {
+        span.innerHTML = "<img src='icons/redball.gif'>" ;
+    }
 }
 
 function getCurrentData() {
@@ -50,7 +57,9 @@ function displayDBdata(data) {
     console.log("called on data: " + data) ;
     var item ;
     var dataTable = document.getElementById("dataBody") ;
-    var lastRow = document.getElementById("lastRow") ;
+    while (dataTable.lastChild) {
+        dataTable.removeChild(dataTable.lastChild) ;
+    }
     for (i = 0 ; i < data.length ; i++) {
         var newTR = document.createElement("TR") ;
         var keyTD = document.createElement("TD") ;
@@ -58,6 +67,6 @@ function displayDBdata(data) {
         keyTD.appendChild(document.createTextNode(data[i][0])) ;
         valTD.appendChild(document.createTextNode(data[i][1])) ;
         newTR.appendChild(keyTD) ; newTR.appendChild(valTD) ;
-        dataTable.insertBefore(newTR, lastRow) ;
+        dataTable.appendChild(newTR, dataTable.firstChild) ;
     }
 }

@@ -2,21 +2,22 @@
   <head>
     <base href="/">
     <title>Core Services Acceptance</title>
-    <script src="accept-client.js"></script>
     <link rel="stylesheet" href="tables.css">
+    <script src="accept-client.js"></script>
   </head>
   <body>
     <h1>Core Services Acceptance</h1>
-    <p>Current DB status: <span id="dbstatus"></span></p>
     <table id="dataTable" border=1>
       <tr><th>Key</th><th>Value</th></tr>
       <tbody id="dataBody">
+      </tbody>
       <tr id="lastRow">
         <form action="write" method="get">
         <td><input type="text" name="key" /></td>
         <td><button type="submit">Add key</button></td>
       </tr>
-      </tbody>
+      <tr>
+        <td>Current DB Status:</td><td><span id="dbstatus"></span></td></tr>
     </table>
   </body>
 </html>
