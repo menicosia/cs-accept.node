@@ -3,14 +3,12 @@
   "version": "0.0.1",
   "author": "Marco Nicosia",
   "dependencies": {
-    "strftime": "0.8.2",
-    "time": "0.x.x",
-    "mysql": "2.8.0",
-    "redis": "0.12.1",
-    "serve-static": "1.10.0",
-    "finalhandler": "0.4.0"
+    "strftime": "0.x.x",
+    "mysql": "2.x.x",
+    "serve-static": "1.x.x",
+    "finalhandler": "1.x.x"
   },
   "engines": {
-    "node": "10.x"
+    "node": "13.x"
   }
 }
