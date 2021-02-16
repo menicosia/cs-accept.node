@@ -31,12 +31,22 @@ var riakcsConnectionState = Boolean(false) ;
 
 // Setup based on Environment Variables
 mysql_creds = bindMySQL.getMySQLCreds() ;
-if (mysql_creds) { activateState="mysql" ; }
+if (mysql_creds) { console.log("Got binding credentials, activating MySQL") ; activateState = Boolean(true) ; }
 
 if (process.env.VCAP_APP_PORT) { var port = process.env.VCAP_APP_PORT ;}
 else { var port = 8080 ; }
 if (process.env.CF_INSTANCE_INDEX) { var myIndex = JSON.parse(process.env.CF_INSTANCE_INDEX) ; }
-else { myIndex = 0 ; }
+else {
+    myIndex = 0 ;
+    console.log("CF not detected, checking ENV for MYSQL_URL") ;
+    if (process.env.MYSQL_URI) {
+        mysql_creds["uri"] = process.env.MYSQL_URI ;
+        activateState = Boolean(true) ;
+    } else {
+        console.log("No MYSQL_URI, will run in passive mode till configured,; see /config endpoint.") ;
+        activateState = Boolean(false) ;
+    }
+}
 var myInstance = "Instance_" + myIndex + "_Hash" ;
 
 function setupSchema() {
@@ -123,6 +133,7 @@ function doPing(request, response) {
 
 function doStatus(request, response) {
     dbClient.query("SHOW STATUS LIKE 'Ssl_version'", function (err, results, fields) {
+        // FIXME: what happens when the request fails, and request[] is empty?
         response.end(JSON.stringify({"dbStatus": dbConnectState,
                                      "tls-cipher": results[0]["Value"]})) ;
     }) ;
@@ -130,6 +141,8 @@ function doStatus(request, response) {
 
 function MySQLConnect() {
     if (activateState) {
+        console.log("Attempting to connect to MySQL:") ;
+        console.log(mysql_creds) ;
         clientConfig = {
             host : mysql_creds["host"],
             user : mysql_creds["user"],
@@ -182,18 +195,18 @@ function errorDbNotReady(response) {
 }
 
 function readTable(request, response, table, callBack) {
-    if ("mysql" == activateState && dbConnectState) {
+    if (activateState && dbConnectState) {
         dbClient.query('SELECT K, V from ' + table + ' ORDER BY V ASC',
                        function (error, results, fields) {
                            callBack(request, response, error, results, fields) ;
                        }) ;
     } else {
-        errorDbNotReady(request, response) ;
+        errorDbNotReady(response) ;
     }
 }
 
 function writeSomething(request, response, key) {
-    if ("mysql" == activateState && dbConnectState) {
+    if (activateState && dbConnectState) {
         var timeStamp = strftime("%Y-%m-%d %H:%M") ;
         var sql = "insert into SampleData VALUES ('" + key + "','" + timeStamp + "')" ;
         console.log("SQL: " + sql ) ;
@@ -280,6 +293,31 @@ function requestHandler(request, response) {
         }
         return(true) ;
         break ;
+    case "config":
+        rp = requestParts["query"] ;
+        if ("query" in requestParts
+            && "db_host" in rp && "db_DB" in rp
+            && "db_user" in rp && "db_pw" in rp) {
+                console.log("Received DB connection info: " + rp["db_host"]) ;
+            mysql_creds["host"] = rp["db_host"] ;
+            mysql_creds["database"] = rp["db_DB"] ;
+            mysql_creds["user"] = rp["db_user"] ;
+            mysql_creds["password"] = rp["db_pw"] ;
+            mysql_creds["port"] = "3306" ;
+            if ("ca" in rp && "" != rp["ca"]) {
+                console.log("Defining CA...") ;
+                mysql_creds["ca_certificate"] = rp["ca"];
+            }
+
+            activateState = Boolean(true) ;
+            MySQLConnect() ;
+            response.writeHead(302, {'Location': '/'});
+            response.end();
+        } else {
+            response.end("ERROR: Usage: /config?db_host=127.0.0.1&db_DB=myDB&db_user=mysql&db_pw=REDACTED"
+                         + "(request: " + request.url + ")\n") ;
+        }
+        return(true) ;
     default:
         response.writeHead(404) ;
         response.end("404 - not found") ;
@@ -288,10 +326,8 @@ function requestHandler(request, response) {
 
 // MAIN
 
-if ("mysql" == activateState) {
+if (activateState) {
     MySQLConnect() ;
-} else if ("riakcs" != activateState) {
-    console.error("Error: Not set up to use either MySQL or RiakCS as a backing store.") ;
 }
     
 var staticServer = serveStatic("static") ;

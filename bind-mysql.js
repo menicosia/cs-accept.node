@@ -7,16 +7,16 @@ module.exports.getMySQLCreds = function(service) {
         } else if (vcap_services['p-mysql']) {
             service = "p-mysql" ;
         }
-    } else {
-        console.log("No VCAP_SERVICES in environment; using localhost") ;
-        service = "local" ;
-        mysql_creds["host"] = "localhost" ;
-        mysql_creds["user"] = "root" ;
-        mysql_creds["password"] = "" ;
-        mysql_creds["database"] = "service_instance_db" ;
-        mysql_creds["ca_certificate"] = undefined ;
-        return(mysql_creds) ;
-    }
+    // else {
+    //     console.log("No VCAP_SERVICES in environment; using localhost") ;
+    //     service = "local" ;
+    //     mysql_creds["host"] = "localhost" ;
+    //     mysql_creds["user"] = "root" ;
+    //     mysql_creds["password"] = "" ;
+    //     mysql_creds["database"] = "service_instance_db" ;
+    //     mysql_creds["ca_certificate"] = undefined ;
+    //     return(mysql_creds) ;
+    // }
 
     mysql_creds["host"] = vcap_services[service][0]["credentials"]["hostname"] ;
     mysql_creds["user"] = vcap_services[service][0]["credentials"]["username"] ;
@@ -32,4 +32,8 @@ module.exports.getMySQLCreds = function(service) {
     console.log("Got access credentials to" + service) ;
     // activateState="mysql" ;
     return(mysql_creds) ;
+    }
+    else {
+        return({}) ;
+    }
 }

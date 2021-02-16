@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <base href="/">
+    <title>CS Accept Setup</title>
+  </head>
+  <body>
+    <h1>CS Accept Setup</h1>
+    <p>Use this page to kick off this instance's connection to a
+      database. This can also be accessed via curl using
+      the <i>/config</i> endpoint.</p>
+    <p>Example:<br>
+       <code>curl
+       "http://direct-read.apps.lightsilver.cf-app.com/config?db_IP=10.0.4.12&db_DB=default_schema&db_user=MYSQL_USER&db_password=REDACTED&"
+       -H "X-CF-APP-INSTANCE":"446fbd81-363b-4cb6-a039-78ac24d208db:0"</code></p>
+    <table id="dataTable" border=0>
+        <form action="config" method="get">
+          <tr><td>Database:<td></tr>
+          <tr>
+            <th>Host</th><th>DB</th><th>User</th><th>Password</th></tr>
+          <tr>
+            <td><input type="text" name="db_host" /></td>
+            <td><input type="text" name="db_DB" /></td>
+            <td><input type="text" name="db_user" /></td>
+            <td><input type="password" name="db_pw" /></td></tr>
+          <tr><th>CA certificate</th></tr>
+          <tr><td colspan=4><textarea placeholder="ca cert" name="ca" rows="24" cols="70"></textarea></td></tr>
+          <tr><td><button type="submit">Connect</button></td></tr>
+        </form>
+    </table>
+  </body>
+</html>
